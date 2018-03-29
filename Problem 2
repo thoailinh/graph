@@ -1,0 +1,171 @@
+Cho một đồ thị đang được tô màu dang dở, hãy thực hiện việc chọn màu để tiếp tục tô cho đồ thị. Màu được sử dụng là hệ màu RGB 24 bit với tối đa hơn 16 triệu màu, các màu được đánh số từ 0 (màu đen #000000) đến 16777215 (màu trắng #FFFFFF).
+Quy định là khi tô thì đỉnh không được trùng màu với các đỉnh lân cận của nó. Khi chọn màu chỉ được sử dụng các màu đã tô trước đó, trừ khi những đỉnh lân cận với đỉnh cần tô đã chiếm hết những màu đã sử dụng trước thì mới được chọn màu mới. Khi tô màu dù là các màu đã có hay chọn màu mới, luôn chọn màu có thứ tự nhỏ nhất có thể chọn được.
+INPUT:
+Dòng đầu tiên chứa 03 số v, e, n đây lần lượt là số đỉnh, số cạnh của đồ thị và số lượng đỉnh cần xem xét.
+Dòng tiếp theo chứa v chuỗi, mỗi chuỗi bao một hoặc nhiều ký tự hoa trong bảng chữ cái Tiếng Anh và cách nhau bởi khoảng trắng. Đây là danh sách tên các đỉnh của đồ thị.
+e dòng tiếp theo, mỗi dòng chứa 02 chuỗi u và i (cách nhau bởi khoảng trắng), thể hiện việc có một cạnh nối giữa đỉnh u và đỉnh i trong đồ thị.
+Dòng áp chót trong input chứa v số nguyên, đây tương ứng là màu của các đỉnh đã tô. Số nguyên đầu tiên là màu của đỉnh đầu tiên, đỉnh chưa tô màu sẽ có số tương ứng là -1
+Dòng cuối cùng trong input chứa n chuỗi, đây là các đỉnh mà người chơi đang muốn xem xét để chọn màu.
+OUTPUT:
+Ứng với mỗi đỉnh cần xem xét thực hiện yêu cầu sau:
+Nếu đỉnh đã có màu, kiểm tra màu đó có trùng với màu của các đỉnh lân cận hay không. Nếu không trùng xuất ra chuỗi TRUE trên một dòng
+Nếu đỉnh chưa có màu hoặc đã có nhưng màu đó trùng với màu của một hoặc nhiều đỉnh lân cận thì chọn màu cho đỉnh theo đúng quy tắc và xuất ra màu đó trên một dòng.
+Yêu cầu xem xét được thực hiện độc lập cho mỗi đỉnh. Kết quả xem xét các đỉnh trước hoàn toàn không ảnh hưởng gì đến các đỉnh sau.
+VÍ DỤ:
+Input
+Output
+5 6 2
+I K L G H
+I H
+I K
+I G
+K L
+H K
+L I
+0 -1 0 -1 -1
+H G
+1
+1
+8 5 4
+Y N U L R I J F
+R U
+I L
+Y R
+N Y
+F I
+-1 2 1 1 1 -1 -1 2
+Y R L L
+0
+2
+TRUE
+TRUE
+///////////////////////////////////////////////////////////////////////////////////////////
+#include <iostream>
+#include <vector>
+#include <string>
+#include <set>
+#include <algorithm>
+using namespace std;
+ 
+int ReturnIndex(vector<string> v, string str)
+{
+    for (int i = 0; i < v.size(); i++)
+        if (v[i] == str)
+            return i;
+}
+ 
+bool KiemTraTrung(vector<vector<bool>> matrix, vector<string> v, vector<int> color, int index)
+{
+    for (int i = 0; i < v.size(); i++)
+    {
+        if (matrix[index][i] == 1)
+        {
+            if (color[index] == color[i])
+                return 1;
+        }
+    }
+    return 0;
+ 
+}
+ 
+int ChonMau(vector<vector<bool>> matrix, vector<string> v, vector<int> color, set<int> usedColor, int index)
+{
+    set<int> locmau;
+ 
+    for (int i = 0; i < v.size(); i++)
+    {
+        if (matrix[index][i] == 1)
+        {
+            if(color[i] != -1)
+                locmau.insert(color[i]);
+        }
+    }
+    int c;
+ 
+    if(locmau.size() == usedColor.size())
+    {
+        for (c = 0; c < v.size(); c++)
+            if (locmau.find(c) == locmau.end())
+                break;
+    }
+    else
+    {
+        set<int>::iterator it;
+ 
+        for (it = usedColor.begin(); it != usedColor.end(); it++)
+        {
+            if (locmau.find(*it) == locmau.end())
+            {
+                c = *it;
+                break;
+            }
+        }
+    }
+ 
+    return c;
+}
+ 
+int main()
+{
+    int v, e, n;
+    string str1, str2;
+    cin >> v >> e >> n;
+ 
+    vector<string> vertex;
+ 
+    typedef vector<bool> x;
+    vector<vector<bool>> matrix(v, x(v, 0));
+ 
+    vector<int> color;
+    set<int> usedColor;
+    for (int i = 0; i < v; i++)
+    {
+        cin >> str1;
+        vertex.push_back(str1);
+    }
+ 
+ 
+    for (int i = 0; i < e; i++)
+    {
+        cin >> str1 >> str2;
+        int index1 = ReturnIndex(vertex, str1);
+        int index2 = ReturnIndex(vertex, str2);
+        
+        matrix[index1][index2] = matrix[index2][index1] = 1;
+    }
+    int cc;
+    for (int i = 0; i < v; i++)
+    {
+        cin >> cc;
+        color.push_back(cc);
+        if (cc != -1)
+            usedColor.insert(cc);
+    }
+ 
+ 
+    for (int i = 0; i < n; i++)
+    {
+        cin >> str1;
+        int index = ReturnIndex(vertex, str1);
+ 
+        if (color[index] != -1)
+        {
+            if (KiemTraTrung(matrix, vertex, color, index) == 0)
+                cout << "TRUE" << endl;
+            else
+            {
+                int mau = ChonMau(matrix, vertex, color, usedColor, index);
+                cout << mau << endl;
+            }
+        }
+        else
+        {
+            int mau = ChonMau(matrix, vertex, color, usedColor, index);
+            cout << mau << endl;
+        }
+    }
+ 
+ 
+    system("pause");
+    return 0;
+}
